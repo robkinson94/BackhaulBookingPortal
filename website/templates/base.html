@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>{% block title %}base{% endblock title %}</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+        <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet"/>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.css" rel="stylesheet"/>
+        <link src="{{ url_for('static', filename='CSS/stylesheet.css')}}"/>
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    </head>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+
+          }
+          
+          footer {
+            margin-top: auto;
+          }
+
+          .fade-in { animation: fadeIn 1.4s; }
+          @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+          }
+
+    </style>
+    
+    <body class="fade-in">
+    
+        {% block navbar %}
+        <!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light top">
+    <!-- Container wrapper -->
+    <div class="container">
+      <!-- Navbar brand -->
+      <a class="navbar-brand me-2" href="/">
+        <img
+          src="{{ url_for('static', filename='images/GXO_Logo.png')}}"
+          height="16"
+          alt="MDB Logo"
+          loading="lazy"
+          style="margin-top: -1px;"
+        />
+      </a>
+        <div class="d-flex align-items-center">
+            <a href="/login"><button type="button" class="btn btn-link px-3 me-2">
+              Login
+            </button>
+          </a>
+          <a href="/sign-up">
+          <button type="button" class="GXO-btn btn me-3" style="background-color: #ff3a00; color: #ffffff;">
+            Sign up
+          </button>
+        </a>
+        </div>
+      </div>
+    </div>
+
+  </nav>
+  <!-- Navbar -->
+        {% endblock navbar %}
+        <body class="vh-100 scrollable-content overflow-auto">
+         <!-- Main content -->
+        {% block content %}
+
+        {% with messages = get_flashed_messages(with_categories=true)%}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% if category == 'error' %}
+                    <div id="flashes" class="alert alert-danger alert-dismissable fade fade show" style="padding-top:75px;">
+                        {{ message }}
+                        <button type="button" class="btn btn-primary" style="float: right; background-color:#ff3a00; color:#ffffff;" data-dismiss="alert">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    {% else %}
+                    <div id="flashes" class="alert alert-success alert-dismissable fade show" style="padding-top:75px;">
+                        {{ message }}
+                        <button type="button" class="btn btn-primary" style="float: right; background-color:#ff3a00; color:#ffffff;" data-dismiss="alert">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% endblock content %}
+                  </body>
+
+        {% block footer %}
+        <footer class="bottom">
+        <div
+        class="d-flex flex-column flex-md-row text-center text-md-start justify-content-between py-4 px-4 px-xl-5" style="background-color: #ff3a00; color: #ffffff;">
+        <!-- Copyright -->
+        <div class="text-white mb-3 mb-md-0">
+          Copyright © 2023. All rights reserved.
+        </div>
+        <!-- Copyright -->
+    
+        <div>
+          <a href="#!" class="text-white me-4">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+          <a href="#!" class="text-white me-4">
+            <i class="fab fa-twitter"></i>
+          </a>
+          <a href="#!" class="text-white me-4">
+            <i class="fab fa-youtube"></i>
+          </a>
+        </div>
+        <!-- Right -->
+      </div>
+    </footer>
+    
+
+    {% endblock footer %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+</html>
