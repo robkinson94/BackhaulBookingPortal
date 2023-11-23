@@ -2,11 +2,7 @@ from . import Base
 from flask_login import UserMixin
 from sqlalchemy.sql import func
 from sqlalchemy import Integer, String, Float, DateTime, Date, Time, ForeignKey, Boolean
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column
-from sqlalchemy.orm import relationship
-from sqlalchemy.orm import backref
+from sqlalchemy.orm import Mapped, mapped_column, relationship, backref
 
 
 class User(UserMixin, Base):
