@@ -1,8 +1,10 @@
+
 from . import Base
 from flask_login import UserMixin
 from sqlalchemy.sql import func
 from sqlalchemy import Integer, String, Float, DateTime, Date, Time, ForeignKey, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship, backref
+from itsdangerous import URLSafeSerializer, TimedSerializer
 
 
 class User(UserMixin, Base):
@@ -17,6 +19,7 @@ class User(UserMixin, Base):
     created_at: Mapped[str] = mapped_column(DateTime(timezone=True), default=func.now())
     vendor_id: Mapped[int] = mapped_column(Integer, ForeignKey('vendor.id'), nullable=True)
     vendor = relationship('Vendor', backref=backref('users'))
+    
     
     def __repr__(self):
         return f"User('{self.email}')"

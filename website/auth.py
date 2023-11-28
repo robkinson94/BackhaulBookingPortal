@@ -4,9 +4,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 from sqlalchemy.orm import Session
 from flask_login import login_user, login_required, logout_user, current_user, user_unauthorized
-from .forms import RegistrationForm, LoginForm, ForgotPasswordResetForm, BookingForm, VendorForm, UpgradeToAdmin, DownGradeFromAdmin, UserToVendor, VendorEditBooking, EditVendorDetailsForm, ChangePassword, ConfirmBooking
+from .forms import DeleteBooking, RegistrationForm, LoginForm, ForgotPassword, BookingForm, VendorForm, UpgradeToAdmin, DownGradeFromAdmin, UserToVendor, VendorEditBooking, EditVendorDetailsForm, ChangePassword, ConfirmBooking, DeleteBooking
 from datetime import datetime, time, timedelta
 from sqlalchemy import func, select, literal_column
+from itsdangerous import URLSafeTimedSerializer
+from flask_mail import Mail, Message
 
 
 auth = Blueprint('auth', __name__)
@@ -259,14 +261,37 @@ def create_vendor():
         flash(vendorform.errors, category='error')
     
     return redirect(url_for('auth.profile'))
-    
-    
-    
+
+
+@auth.route('/profile/cancel-booking', methods=['GET', 'POST'])
+@login_required
+def delete_booking():
+    delete_booking = DeleteBooking()
+    if delete_booking.validate_on_submit():
+        mis_ref = delete_booking.mis_ref.data
+        booking = Bookings.query.filter_by(mis_reference=mis_ref).first()
+        if booking:
+            db.session.delete(booking)
+            db.session.commit()
+            flash("Booking Deleted Successfully", category='success')
+            return redirect(url_for('auth.profile'))
+        else:
+            flash("MIS Reference not found please try again.", category='error')
+    else:
+        flash(delete_booking.errors)
+    return redirect(url_for('auth.profile'))
 
 
 @auth.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
+    # Importing the WTForms for downgrade and upgrade forms
+    vendorform = VendorForm()
+    user_to_vendor_form = UserToVendor()
+    downgrade_from_admin_form = DownGradeFromAdmin()
+    upgrade_to_admin_form = UpgradeToAdmin()
+    confirm_booking = ConfirmBooking()
+    delete_booking = DeleteBooking()
     bookings = Bookings.query.filter_by().all()
     result = (
     db.session.query(
@@ -279,12 +304,7 @@ def profile():
     
     todays_bookings = Bookings.query.filter(Bookings.collection_date == datetime.today().date()).all()
     
-    # Importing the WTForms for downgrade and upgrade forms
-    vendorform = VendorForm()
-    user_to_vendor_form = UserToVendor()
-    downgrade_from_admin_form = DownGradeFromAdmin()
-    upgrade_to_admin_form = UpgradeToAdmin()
-    confirm_booking = ConfirmBooking()
+    
     vendors = Vendor.query.filter_by().all()
     users = User.query.filter_by().all()
 
@@ -299,10 +319,30 @@ def profile():
                            upgrade_to_admin_form=upgrade_to_admin_form,
                            downgrade_from_admin_form=downgrade_from_admin_form,
                            user_to_vendor_form=user_to_vendor_form,
-                           confirm_booking=confirm_booking)
+                           confirm_booking=confirm_booking,
+                           delete_booking=delete_booking)
 
 
 ######################################################################################################################################################################################
+
+
+@auth.route('vendor/cancel-booking', methods=['GET','POST'])
+@login_required
+def cancel_booking():
+    delete_booking = DeleteBooking()
+    if delete_booking.validate_on_submit():
+        mis_ref = delete_booking.mis_ref.data
+        booking = Bookings.query.filter_by(mis_reference=mis_ref).first()
+        if booking:
+            booking.status = "**Cancellation Requested**"
+            db.session.commit()
+            flash("Booking cancellation has been requested", category='success')
+            return redirect(url_for('auth.vendor'))
+        else:
+            flash("Booking no found", category='error')
+    else:
+        flash(delete_booking.errors)
+    return redirect(url_for('auth.vendor'))
 
 
 @auth.route('/vendor/change-password', methods=['GET', 'POST'])
@@ -317,7 +357,7 @@ def change_password():
                                                                     salt_length=8)
             db.session.commit()
             flash("Password changed successfully.")
-            redirect(url_for('auth.vendor'))
+            return redirect(url_for('auth.vendor'))
     else:
         flash("Password must match and contain at least one digit, one lowercase letter, one uppercase letter, and be at least 8 characters long.", category='error')
     return redirect(url_for('auth.vendor'))
@@ -442,8 +482,6 @@ def search_bookings():
         return redirect(url_for('auth.vendor', search_ref=search_ref))
 
 
-#######################################################################################################################################################################################
-
 
 #######################################################################################################################################################################################
 
@@ -452,6 +490,7 @@ def search_bookings():
 @login_required
 def vendor():
     result = None
+    delete_booking = DeleteBooking()
     change_password = ChangePassword()
     edit_vendor_form = EditVendorDetailsForm()
     booking_form = BookingForm()
@@ -470,7 +509,8 @@ def vendor():
                            edit_vendor_form=edit_vendor_form,
                            change_password=change_password,
                            result=result,
-                           bookings=bookings)
+                           bookings=bookings,
+                           delete_booking=delete_booking)
 
 
 # @auth.route('/forgot_password', methods=['GET','POST'])

@@ -268,6 +268,38 @@ aria-hidden="true">
 </div>
 </div>
 
+
+
+
+<div class="modal fade" id="modalContactFormSix" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Delete Booking</h4>
+          <button type="button" class="btn btn-primary" style="background-color: #ff3a00;" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+    </div>
+    <div class="modal-body mx-3">
+    <div class="md-form mb-5">
+    </div>
+    <form method="POST" action="/profile/cancel-booking">
+      {{ delete_booking.hidden_tag() }}
+  <!-- Password input -->
+  <div class="form-outline mb-4">
+    {{ delete_booking.mis_ref(class="form-control", style="background-color: #F0F0F0")}}
+    {{ delete_booking.mis_ref.label }}
+  </div>
+
+  <!-- Submit button -->
+    {{ delete_booking.delete_booking(class="btn btn-primary",style="background-color:#ff3a00; color:#ffffff;")}}
+  </div>
+</form>
+</div>
+</div>
+</div>
+
       <!--******************************************************** View ATM *************************************************************************-->
 
     <div class="modal fade" id="modalContactFormThree" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
@@ -437,6 +469,10 @@ aria-hidden="true">
           <div class="card mb-4 mb-lg-0">
             <div class="card-body p-0">
               <ul class="list-group list-group-flush rounded-3">
+                <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                  <i class="fas fa-pencil-alt fa-lg" style="color: #ff3a00;"></i>
+                  <p class="mb-0" data-toggle="modal" data-target="#modalContactFormSix">Cancel Booking</p>
+                </li>
                 <li class="list-group-item d-flex justify-content-between align-items-center p-3">
                   <i class="fas fa-pencil-alt fa-lg" style="color: #ff3a00;"></i>
                   <p class="mb-0" data-toggle="modal" data-target="#modalContactFormFive">Allocate User to Vendor</p>

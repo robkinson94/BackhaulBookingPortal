@@ -92,12 +92,6 @@ class BookingForm(FlaskForm):
     submit_booking = SubmitField("Send Booking Request")
 
 
-class ForgotPasswordResetForm(FlaskForm):
-    email = StringField("Email Address", validators=[
-                        DataRequired(), Email(), Length(min=5, max=25)])
-    submit = SubmitField("Reset")
-
-
 class VendorForm(FlaskForm):
     vendor_name = StringField("Vendor:", validators=[DataRequired()])
     address = StringField("Address", validators=[DataRequired()])
@@ -146,3 +140,13 @@ class UserToVendor(FlaskForm):
     user_email = StringField("Email", validators=[DataRequired(), Email()])
     vendor_name = StringField("Vendor", validators=[DataRequired()])
     submit_allocation = SubmitField("Allocate User to Vendor")
+    
+
+class ForgotPassword(FlaskForm):
+    email = StringField("Email", validators=[DataRequired(), Email()])
+    submit = SubmitField("Send Email")
+    
+
+class DeleteBooking(FlaskForm):
+    mis_ref = StringField("MIS Reference", validators=[DataRequired()])
+    delete_booking = SubmitField("Delete Booking")

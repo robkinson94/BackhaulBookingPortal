@@ -1,9 +1,14 @@
-from flask import Flask
+from flask import Flask, url_for, flash, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 from werkzeug.security import generate_password_hash
 from os import path
+
+
+
+
+
 
 # Define a base class for SQLAlchemy models using declarative_base
 class Base(DeclarativeMeta):
@@ -26,6 +31,7 @@ def create_app():
     app.config['SECRET_KEY'] = 'HJ7Hgr5thm5saWASE547vfds'
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DATABASE}'
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
     
     
     # Initialize and attach SQLAlchemy to the app
@@ -40,6 +46,7 @@ def create_app():
     
     # Import User and Admin models and create an admin user if not exists
     from .models import User
+
     
     def create_admin():
         users = User.query.filter_by().count()
