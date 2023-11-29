@@ -1,79 +1,123 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
+from flask import Blueprint, render_template, request, flash, redirect, url_for
 from .models import User, Bookings, Vendor
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
-from sqlalchemy.orm import Session
-from flask_login import login_user, login_required, logout_user, current_user, user_unauthorized
-from .forms import DeleteBooking, RegistrationForm, LoginForm, ForgotPassword, BookingForm, VendorForm, UpgradeToAdmin, DownGradeFromAdmin, UserToVendor, VendorEditBooking, EditVendorDetailsForm, ChangePassword, ConfirmBooking, DeleteBooking
-from datetime import datetime, time, timedelta
-from sqlalchemy import func, select, literal_column
-from itsdangerous import URLSafeTimedSerializer
-from flask_mail import Mail, Message
+from flask_login import login_user, login_required, logout_user, current_user
+from .forms import RegistrationForm, LoginForm, ChangePassword
+from .forms import BookingForm, VendorForm, UpgradeToAdmin, DownGradeFromAdmin
+from .forms import UserToVendor, VendorEditBooking, EditVendorDetailsForm
+from .forms import ConfirmBooking, DeleteBooking
+from datetime import datetime
+from sqlalchemy import func
 
 
 auth = Blueprint('auth', __name__)
 
+
 ADMIN_USERS = [1]
+
+
+######################################################################################################################################################################################
 
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
+    # Create an instance of the LoginForm
     form = LoginForm()
+
+    # Extract email and password from the form data
     email = form.email.data
     password = form.password.data
+
     if form.validate_on_submit():
+        # Query the database for a user with the given email
         user = User.query.filter_by(email=email).first()
+
         if user:
+            # Check if the provided password matches the hashed password in the database
             if check_password_hash(user.password, password):
+                # Log in the user
                 login_user(user)
+
+                # Redirect the user based on their role
                 if user.id in ADMIN_USERS or user.is_admin:
                     return redirect(url_for('auth.profile', user=user))
                 else:
                     return redirect(url_for('auth.vendor', user=user))
             else:
+                # Display an error message for invalid email or password
                 flash("Invalid email or password", category="error")
         else:
+            # Display an error message for invalid email or password
             flash("Invalid email or password", category="error")
 
+    # Render the login template with the form
     return render_template("login.html", form=form)
+
+
+######################################################################################################################################################################################
 
 
 @auth.route('/logout')
 @login_required
 def logout():
+    # Log out the current user
     logout_user()
+
+    # Render the home template after logging out
     return render_template("home.html")
+
+
+######################################################################################################################################################################################
 
 
 @auth.route('/sign-up', methods=['GET', 'POST'])
 def sign_up():
+    # Create an instance of the RegistrationForm
     form = RegistrationForm()
+
+    # Extract data from the form
     first_name = form.first_name.data
     last_name = form.last_name.data
     phone = form.phone.data
     email = form.email.data
     password = form.password.data
+
     if form.validate_on_submit():
+        # Check if the email already exists in the database
         result = User.query.filter_by(email=form.email.data).first()
+
         if result:
             flash(f"{form.email.data} already exists", category="error")
         else:
-            new_user = User(email=email,
-                            phone=phone,
-                            first_name=first_name,
-                            last_name=last_name,
-                            password=generate_password_hash(password,
-                                                            method='pbkdf2:sha1',
-                                                            salt_length=8))
+            # Create a new user and add it to the database
+            new_user = User(
+                email=email,
+                phone=phone,
+                first_name=first_name,
+                last_name=last_name,
+                password=generate_password_hash(
+                    password,
+                    method='pbkdf2:sha1',
+                    salt_length=8
+                )
+            )
             db.session.add(new_user)
             db.session.commit()
+
+            # Display a success message and log in the new user
             flash(f"Account created for {form.first_name.data}", category="success")
+
+            # Clear form data
             form.first_name.data = ''
             form.last_name.data = ''
             form.phone.data = ''
             form.email.data = ''
             form.password.data = ''
+
+            # Log in the new user and redirect based on user type
             login_user(new_user)
+
             if new_user.id in ADMIN_USERS:
                 return redirect(url_for('auth.profile', user=new_user))
             else:
@@ -85,14 +129,22 @@ def sign_up():
                            last_name=last_name,
                            email=email,
                            password=password)
+
     
+######################################################################################################################################################################################
+
 
 @auth.route('/profile/confirm-booking', methods=["POST", "GET"])
 @login_required
 def confirm_booking():
+    # Create an instance of the ConfirmBooking form
     confirm_booking = ConfirmBooking()
+
+    # Print form data for debugging purposes
     print(confirm_booking.data)
+
     if confirm_booking.validate_on_submit():
+        # Extract data from the form
         mis_ref = confirm_booking.mis_ref.data
         collection_date = confirm_booking.collection_date.data
         booking_date = confirm_booking.delivery_date.data
@@ -101,44 +153,38 @@ def confirm_booking():
         tod = confirm_booking.tod.data
         comments = confirm_booking.comments.data
         status = "Confirmed"
-        # am_threshold = time(17,59)
-        # pm_threshold = time(23,59)
-        # if booking_time < pm_threshold and booking_time > am_threshold:
-        #     tod = "AM"
-        # else:
-        #     tod = "PM"
-        # if booking_date.weekday() == (6):
-        #     collection_date = booking_date - timedelta(days=2)
-        # elif booking_date.weekday() == (0) and tod == "AM":
-        #     collection_date = booking_date - timedelta(days=3)
-        # elif booking_date.weekday() != (5, 6, 0) and tod == "AM":
-        #     collection_date = collection_date - timedelta(days=1)
-        # else:
-        #     collection_date = booking_date
-        
-        record = Bookings.query.filter_by(mis_reference=mis_ref).first()
-        
-        if record:
-            record.delivery_date = booking_date
-            record.collection_date = collection_date
-            record.booking_date = booking_date
-            record.booking_time = booking_time
-            record.tod = tod
-            record.status = status
-            record.booking_ref = booking_ref
-            record.comments = comments
-            
-            db.session.commit()
-            flash("Booking Confirmed!", category='success')
-            return redirect(url_for('auth.profile'))
+
+        # Check if dates are in the past
+        if collection_date < datetime.today().date() or booking_date == datetime.today().date():
+            flash("Collection cannot be in the past / Booking date cannot be today", category='error')
         else:
-            flash("Ref not found.", category='error')
+            # Query the database to find the booking record
+            record = Bookings.query.filter_by(mis_reference=mis_ref).first()
+
+            if record:
+                # Update the booking record with new data
+                record.delivery_date = booking_date
+                record.collection_date = collection_date
+                record.booking_date = booking_date
+                record.booking_time = booking_time
+                record.tod = tod
+                record.status = status
+                record.booking_ref = booking_ref
+                record.comments = comments
+
+                db.session.commit()
+                flash("Booking Confirmed!", category='success')
+                return redirect(url_for('auth.profile'))
+            else:
+                flash("Ref not found.", category='error')
     else:
         flash(confirm_booking.errors)
-        
-        
+
     return redirect(url_for('auth.profile'))
-    
+
+
+######################################################################################################################################################################################
+
 
 @auth.route('/profile/upgrade-to-admin', methods=["POST", "GET"])
 @login_required
@@ -154,7 +200,7 @@ def upgrade_to_admin():
             # Extracting user ID
             user_id = user.id
             # Checking if the user is already an admin
-            if user_id in ADMIN_USERS and user.is_admin == True:
+            if user_id in ADMIN_USERS or user.is_admin == True:
                 flash(f"{user.email} is already an admin", category='info')
             else:
                 # Upgrading the user to admin status
@@ -167,8 +213,11 @@ def upgrade_to_admin():
             flash("User not found", category='error')
     else:
         flash(upgrade_to_admin_form.errors, category='error')
-        
+
     return redirect(url_for('auth.profile'))
+
+
+######################################################################################################################################################################################
 
 
 @auth.route('/profile/downgrade-admin', methods=["POST", "GET"])
@@ -190,176 +239,221 @@ def downgrade_admin():
                 # Revoking admin rights from the user
                 user.is_admin = False
                 db.session.commit()
-                flash("User has been revoked of admin rights", category="success")
+                flash("User has been revoked of admin rights",
+                      category="success")
+
                 return redirect(url_for('auth.profile'))
         else:
             flash("User not found", category='error')
     else:
         flash(downgrade_from_admin_form.errors, category='error')
-    
+
     return redirect(url_for('auth.profile'))
+
+
+######################################################################################################################################################################################
 
 
 @auth.route('/profile/allocate-vendor', methods=["POST", "GET"])
 @login_required
 def allocate_vendor():
+    # Create an instance of the UserToVendor form
     user_to_vendor_form = UserToVendor()
+
     if user_to_vendor_form.validate_on_submit():
+        # Extract data from the form
         email = user_to_vendor_form.user_email.data
         vendor = user_to_vendor_form.vendor_name.data
+
+        # Query the database to check if the user and vendor exist
         vendors = Vendor.query.filter_by(name=vendor).first()
         user = User.query.filter_by(email=email).first()
+
         if user and vendors:
+            # Allocate the user to the vendor
             user.vendor_id = vendors.id
             db.session.commit()
+
             flash(f"User added to vendor: {vendors.name}", category='success')
             return redirect(url_for('auth.profile'))
         else:
             flash("Email/Vendor not found", category='error')
-            
+
     return redirect(url_for('auth.profile'))
+
+
+######################################################################################################################################################################################
 
 
 @auth.route('/profile/create-vendor', methods=["POST", "GET"])
 @login_required
 def create_vendor():
-    vendorform = VendorForm()
-    if vendorform.validate_on_submit():
-        vendor_name = vendorform.vendor_name.data
-        address = vendorform.address.data
-        paragon_name = vendorform.paragon_name.data
-        opening_time = vendorform.opening_time.data
-        closing_time = vendorform.closing_time.data
-        trailer_requirement = vendorform.trailer_requirement.data
-        nearby_stores = vendorform.nearby_stores.data
-        ATM_Comments = vendorform.ATM_Comments.data
-        charge_to_cambuslang = vendorform.charge_to_cambuslang.data
-        charge_to_redhouse = vendorform.charge_to_redhouse.data
-        charge_to_swindon = vendorform.charge_to_swindon.data
-        charge_to_worksop = vendorform.charge_to_worksop.data
-        vendor = Vendor.query.filter_by(name=vendor_name).first()
-        if vendor:
+    # Create an instance of the VendorForm
+    vendor_form = VendorForm()
+
+    if vendor_form.validate_on_submit():
+        # Extract data from the form
+        vendor_name = vendor_form.vendor_name.data
+        address = vendor_form.address.data
+        paragon_name = vendor_form.paragon_name.data
+        opening_time = vendor_form.opening_time.data
+        closing_time = vendor_form.closing_time.data
+        trailer_requirement = vendor_form.trailer_requirement.data
+        nearby_stores = vendor_form.nearby_stores.data
+        ATM_comments = vendor_form.ATM_Comments.data
+        charge_to_cambuslang = vendor_form.charge_to_cambuslang.data
+        charge_to_redhouse = vendor_form.charge_to_redhouse.data
+        charge_to_swindon = vendor_form.charge_to_swindon.data
+        charge_to_worksop = vendor_form.charge_to_worksop.data
+
+        # Query the database to check if the vendor already exists
+        existing_vendor = Vendor.query.filter_by(name=vendor_name).first()
+
+        if existing_vendor:
             flash(f"{vendor_name} already exists", category="error")
         else:
-            new_vendor = Vendor(name=vendor_name,
-                                address=address,
-                                paragon_name=paragon_name,
-                                opening_hours=opening_time,
-                                closing_hours=closing_time,
-                                trailer_requirement=trailer_requirement,
-                                nearby_store=nearby_stores,
-                                ATM_comments=ATM_Comments,
-                                charge_to_cambuslang=charge_to_cambuslang,
-                                charge_to_redhouse=charge_to_redhouse,
-                                charge_to_swindon=charge_to_swindon,
-                                charge_to_worksop=charge_to_worksop)
+            # Create a new vendor
+            new_vendor = Vendor(
+                name=vendor_name,
+                address=address,
+                paragon_name=paragon_name,
+                opening_hours=opening_time,
+                closing_hours=closing_time,
+                trailer_requirement=trailer_requirement,
+                nearby_store=nearby_stores,
+                ATM_comments=ATM_comments,
+                charge_to_cambuslang=charge_to_cambuslang,
+                charge_to_redhouse=charge_to_redhouse,
+                charge_to_swindon=charge_to_swindon,
+                charge_to_worksop=charge_to_worksop
+            )
+
+            # Add the new vendor to the database
             db.session.add(new_vendor)
             db.session.commit()
+
             flash(f"Account created for {vendor_name}", category="success")
             return redirect(url_for('auth.profile'))
     else:
-        flash(vendorform.errors, category='error')
-    
+        flash(vendor_form.errors, category='error')
+
     return redirect(url_for('auth.profile'))
+
+
+######################################################################################################################################################################################
 
 
 @auth.route('/profile/cancel-booking', methods=['GET', 'POST'])
 @login_required
 def delete_booking():
-    delete_booking = DeleteBooking()
-    if delete_booking.validate_on_submit():
-        mis_ref = delete_booking.mis_ref.data
+    # Create an instance of the DeleteBooking form
+    delete_booking_form = DeleteBooking()
+
+    if delete_booking_form.validate_on_submit():
+        # Get MIS reference from the form
+        mis_ref = delete_booking_form.mis_ref.data
+        # Query the booking with the provided MIS reference
         booking = Bookings.query.filter_by(mis_reference=mis_ref).first()
+
         if booking:
+            # Delete the booking from the database
             db.session.delete(booking)
             db.session.commit()
             flash("Booking Deleted Successfully", category='success')
-            return redirect(url_for('auth.profile'))
         else:
-            flash("MIS Reference not found please try again.", category='error')
+            flash("MIS Reference not found, please try again.", category='error')
     else:
-        flash(delete_booking.errors)
+        flash(delete_booking_form.errors)
+
     return redirect(url_for('auth.profile'))
+
+
+######################################################################################################################################################################################
 
 
 @auth.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
-    # Importing the WTForms for downgrade and upgrade forms
-    vendorform = VendorForm()
+    # Import WTForms for various forms used in the profile view
+    vendor_form = VendorForm()
     user_to_vendor_form = UserToVendor()
     downgrade_from_admin_form = DownGradeFromAdmin()
     upgrade_to_admin_form = UpgradeToAdmin()
-    confirm_booking = ConfirmBooking()
-    delete_booking = DeleteBooking()
+    confirm_booking_form = ConfirmBooking()
+    delete_booking_form = DeleteBooking()
+
+    # Query all bookings from the database
     bookings = Bookings.query.filter_by().all()
+
+    # Calculate total charges per vendor
     result = (
-    db.session.query(
-        Bookings.vendor.label('vendor_name'),
-        func.sum(Bookings.charge).label('total_charge')
+        db.session.query(
+            Bookings.vendor.label('vendor_name'),
+            func.sum(Bookings.charge).label('total_charge')
+        )
+        .group_by(Bookings.vendor)
+        .all()
     )
-    .group_by(Bookings.vendor)
-    .all()
-    )
-    
-    todays_bookings = Bookings.query.filter(Bookings.collection_date == datetime.today().date()).all()
-    
-    
+
+    # Query today's bookings
+    todays_bookings = Bookings.query.filter(
+        Bookings.collection_date == datetime.today().date()).all()
+
+    # Query all vendors and users from the database
     vendors = Vendor.query.filter_by().all()
     users = User.query.filter_by().all()
 
-    
-
-    return render_template('profile.html', users=users, user=current_user,
+    return render_template('profile.html',
+                           users=users,
+                           user=current_user,
                            bookings=bookings,
-                           vendorform=vendorform,
+                           vendor_form=vendor_form,
                            vendors=vendors,
                            result=result,
                            todays_bookings=todays_bookings,
                            upgrade_to_admin_form=upgrade_to_admin_form,
                            downgrade_from_admin_form=downgrade_from_admin_form,
                            user_to_vendor_form=user_to_vendor_form,
-                           confirm_booking=confirm_booking,
-                           delete_booking=delete_booking)
+                           confirm_booking_form=confirm_booking_form,
+                           delete_booking_form=delete_booking_form)
 
 
 ######################################################################################################################################################################################
 
 
-@auth.route('vendor/cancel-booking', methods=['GET','POST'])
-@login_required
-def cancel_booking():
-    delete_booking = DeleteBooking()
-    if delete_booking.validate_on_submit():
-        mis_ref = delete_booking.mis_ref.data
-        booking = Bookings.query.filter_by(mis_reference=mis_ref).first()
-        if booking:
-            booking.status = "**Cancellation Requested**"
-            db.session.commit()
-            flash("Booking cancellation has been requested", category='success')
-            return redirect(url_for('auth.vendor'))
-        else:
-            flash("Booking no found", category='error')
-    else:
-        flash(delete_booking.errors)
-    return redirect(url_for('auth.vendor'))
-
-
 @auth.route('/vendor/change-password', methods=['GET', 'POST'])
 @login_required
 def change_password():
-    change_password = ChangePassword()
-    if change_password.validate_on_submit():
-        password = change_password.password.data
+    # Create an instance of the ChangePassword form
+    change_password_form = ChangePassword()
+
+    # Check if the form is submitted and valid
+    if change_password_form.validate_on_submit():
+        # Extract the new password from the form
+        password = change_password_form.password.data
+
+        # Query the user by ID
         user = User.query.filter_by(id=current_user.id).first()
+
         if user:
-            user.password = generate_password_hash(password, method='pbkdf2:sha1',
-                                                                    salt_length=8)
+            # Update the user's password in the database
+            user.password = generate_password_hash(
+                password, method='pbkdf2:sha1', salt_length=8)
             db.session.commit()
+
+            # Flash success message
             flash("Password changed successfully.")
+
+            # Redirect to the vendor page
             return redirect(url_for('auth.vendor'))
+
     else:
-        flash("Password must match and contain at least one digit, one lowercase letter, one uppercase letter, and be at least 8 characters long.", category='error')
+        # Flash password requirements error if the form is not valid or not submitted
+        flash("""Password must match and contain at least one digit, 
+                 one lowercase letter, one uppercase letter, 
+                 and be at least 8 characters long.""", category='error')
+
+    # Redirect to the vendor page
     return redirect(url_for('auth.vendor'))
 
 
@@ -369,25 +463,39 @@ def change_password():
 @auth.route('/vendor/edit_profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
+    # Create an instance of the EditVendorDetailsForm
     edit_vendor_form = EditVendorDetailsForm()
+
+    # Check if the form is submitted and valid
     if edit_vendor_form.validate_on_submit():
+        # Extract form data
         first_name = edit_vendor_form.first_name.data
         last_name = edit_vendor_form.last_name.data
         email = edit_vendor_form.email.data
         phone = edit_vendor_form.phone.data
 
+        # Query the user by ID
         user = User.query.filter_by(id=current_user.id).first()
 
         if user:
+            # Update user details in the database
             user.first_name = first_name
             user.last_name = last_name
             user.email = email
             user.phone = phone
             db.session.commit()
+
+            # Flash success message
             flash("Changes saved successfully", category='success')
-            redirect(url_for('auth.vendor'))
+
+            # Redirect to the vendor page
+            return redirect(url_for('auth.vendor'))
+
     else:
+        # Flash form validation errors
         flash(edit_vendor_form.errors, category='error')
+
+    # Redirect to the vendor page if form is not valid or not submitted
     return redirect(url_for('auth.vendor'))
 
 
@@ -397,9 +505,12 @@ def edit_profile():
 @auth.route('/vendor/request_booking', methods=['GET', 'POST'])
 @login_required
 def request_booking():
-    
+    # Create an instance of the BookingForm
     booking_form = BookingForm()
+    
+    # Check if the form is submitted and valid
     if booking_form.validate_on_submit():
+        # Initialize default values for new booking
         mis_reference = "MIS:"
         status = "Awaiting Confirmation"
         vendor = current_user.vendor.name
@@ -408,7 +519,11 @@ def request_booking():
         po = booking_form.po.data
         comments = booking_form.comments.data
         user_id = current_user.id
+        
+        # Query the charge for the selected destination from the Vendor model
         charge_vendor = Vendor.query.filter_by(name=vendor).first()
+        
+        # Determine the charge based on the destination
         if destination == "Redhouse" or destination == "Redhouse RCC":
             charge = float(charge_vendor.charge_to_redhouse)
         elif destination == "Swindon" or destination == "Swindon RCC":
@@ -419,6 +534,8 @@ def request_booking():
             charge = float(charge_vendor.charge_to_worksop)
         else:
             charge = 0.0
+        
+        # Create a new booking record in the database
         new_booking = Bookings(user_id=user_id,
                                mis_reference=mis_reference,
                                status=status, vendor=vendor,
@@ -430,15 +547,19 @@ def request_booking():
         db.session.add(new_booking)
         db.session.commit()
 
+        # Update MIS reference with the booking ID
         get_id = new_booking.id
         mis_ref = f'MIS{get_id}'
-
         new_booking.mis_reference = mis_ref
         db.session.commit()
 
+        # Flash a success message
         flash(f"Booking has been requested with {mis_ref}")
+        
+        # Redirect to the vendor page
         return redirect(url_for('auth.vendor'))
 
+    # Redirect to the vendor page if form is not valid or not submitted
     return redirect(url_for('auth.vendor'))
 
 
@@ -448,39 +569,42 @@ def request_booking():
 @auth.route('/vendor/edit-booking', methods=['GET', 'POST'])
 @login_required
 def edit_booking():
+    # Create an instance of the VendorEditBooking form
     vendor_edit_booking_form = VendorEditBooking()
+    
+    # Check if the form is submitted and valid
     if vendor_edit_booking_form.validate_on_submit():
+        # Retrieve data from the form
         mis_ref = vendor_edit_booking_form.mis_ref.data
         destination = vendor_edit_booking_form.destination.data
         pallets = vendor_edit_booking_form.pallets.data
         po = vendor_edit_booking_form.po.data
         comments = vendor_edit_booking_form.comments.data
+        
+        # Query the database for the booking with the given MIS reference
         booking = Bookings.query.filter_by(mis_reference=mis_ref).first()
+        
+        # Check if the booking exists
         if booking:
+            # Update booking details
             booking.status = "Awaiting Confirmation"
             booking.destination = destination
             booking.pallets = pallets
             booking.po = po
             booking.comments = comments
             db.session.commit()
-            flash(f"Booking has been requested with new changes")
+            
+            # Flash a success message
+            flash("Booking has been requested with new changes")
+            
+            # Redirect to the vendor page
             return redirect(url_for('auth.vendor'))
         else:
+            # Flash an error message if the booking is not found
             flash(f"{mis_ref} not found, try again.", category='error')
+    
+    # Redirect to the vendor page
     return redirect(url_for('auth.vendor'))
-
-
-#######################################################################################################################################################################################
-
-
-@auth.route('/vendor/search_mis_ref', methods=['GET', 'POST'])
-@login_required
-def search_bookings():
-    if request.method == "POST":
-        mis_ref = request.form.get('mis_ref')
-        search_ref = Bookings.query.filter_by(mis_reference=mis_ref).first()
-        return redirect(url_for('auth.vendor', search_ref=search_ref))
-
 
 
 #######################################################################################################################################################################################
@@ -489,6 +613,7 @@ def search_bookings():
 @auth.route('/vendor', methods=['GET', 'POST'])
 @login_required
 def vendor():
+    # Initialize variables and forms
     result = None
     delete_booking = DeleteBooking()
     change_password = ChangePassword()
@@ -496,12 +621,16 @@ def vendor():
     booking_form = BookingForm()
     vendor_edit_booking_form = VendorEditBooking()
 
+    # Check if the current user has a vendor and a 'name' attribute
     if current_user.vendor and hasattr(current_user.vendor, 'name'):
+        # Retrieve bookings for the current user's vendor
         result = Bookings.query.filter_by(
             vendor=current_user.vendor.name).all()
 
+    # Get the ID of the current user
     bookings = current_user.id
 
+    # Render the 'vendor.html' template with the necessary data
     return render_template('vendor.html',
                            user=current_user,
                            vendor_edit_booking_form=vendor_edit_booking_form,
@@ -512,10 +641,3 @@ def vendor():
                            bookings=bookings,
                            delete_booking=delete_booking)
 
-
-# @auth.route('/forgot_password', methods=['GET','POST'])
-# def forgot_password():
-#     form = ForgotPasswordResetForm()
-#     if form.validate_on_submit():
-#         send_reset_email(form.email.data)
-#     return render_template('forgot_password.html', user=current_user, form=form)

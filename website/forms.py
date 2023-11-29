@@ -1,6 +1,12 @@
 from datetime import datetime
-from wtforms import Form, BooleanField, StringField, validators, SubmitField, PasswordField
-from wtforms import IntegerField, DateField, TimeField, SelectField, FloatField, TelField, DateTimeField
+from wtforms import (Form, BooleanField, 
+                     StringField, validators, 
+                     SubmitField, PasswordField)
+
+from wtforms import (IntegerField, DateField, 
+                     TimeField, SelectField, 
+                     FloatField, TelField, DateTimeField)
+
 from flask_wtf import FlaskForm
 from wtforms.validators import DataRequired, Length, Email, EqualTo
 from .models import Vendor
@@ -34,8 +40,8 @@ class EditVendorDetailsForm(FlaskForm):
                         DataRequired(), Email(), Length(min=5, max=25)])
     phone = TelField("Contact Nummber", validators=[Length(min=11, max=15)])
     submit_vendor_details = SubmitField("Submit Vendor Changes")
-    
-    
+
+
 class ChangePassword(FlaskForm):
     password = PasswordField("Password", validators=[DataRequired(),
                                                      validators.regexp(r'^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$',
@@ -55,7 +61,8 @@ class VendorEditBooking(FlaskForm):
 
 
 class UpgradeToAdmin(FlaskForm):
-    email = StringField("Email Address", validators=[DataRequired(), Email("Must be a valid email!")])
+    email = StringField("Email Address", validators=[
+                        DataRequired(), Email("Must be a valid email!")])
     submit_upgrade = SubmitField("Make Admin")
 
 
@@ -74,13 +81,13 @@ class BookingForm(FlaskForm):
     vendor = StringField("Vendor")
     mis_ref = StringField("MIS Reference")
     destination = SelectField("Destination", choices=[('Redhouse', 'Redhouse'),
-                                                       ('Redhouse RCC',
-                                                        'Redhouse RCC'),
-                                                       ('Swindon', 'Swindon'),
-                                                       ('Swindon RCC',
-                                                        'Swindon RCC'),
-                                                       ('Worksop', 'Worksop')
-                                                       ], validators=[DataRequired()])
+                                                      ('Redhouse RCC',
+                                                       'Redhouse RCC'),
+                                                      ('Swindon', 'Swindon'),
+                                                      ('Swindon RCC',
+                                                       'Swindon RCC'),
+                                                      ('Worksop', 'Worksop')
+                                                      ], validators=[DataRequired()])
     pallets = IntegerField("Pallet Count", validators=[DataRequired()])
     collection_date = DateField("Collection Date")
     delivery_date = DateField("Delivery Date")
@@ -119,33 +126,38 @@ class VendorForm(FlaskForm):
     charge_to_redhouse = FloatField(
         "Cost to Redhouse (£)", validators=[DataRequired()])
     submit = SubmitField("Submit Changes")
-    
+
 
 class ConfirmBooking(FlaskForm):
-    vendor = StringField("Vendor", validators=[DataRequired()], render_kw={"readonly": True})
+    vendor = StringField("Vendor", validators=[
+                         DataRequired()], render_kw={"readonly": True})
     mis_ref = StringField("MIS Reference", render_kw={"readonly": True})
     destination = StringField("Destination", render_kw={"readonly": True})
-    pallets = IntegerField("Pallet Count", validators=[DataRequired()], render_kw={"readonly": True})
-    collection_date = DateField("Collection Date", validators=[DataRequired()], format="%Y-%m-%d")
-    delivery_date = DateField("Delivery Date", validators=[DataRequired()], format="%Y-%m-%d")
-    tod = SelectField("AM/PM", choices=[("AM","AM"),("PM","PM")])
+    pallets = IntegerField("Pallet Count", validators=[
+                           DataRequired()], render_kw={"readonly": True})
+    collection_date = DateField("Collection Date", validators=[
+                                DataRequired()], format="%Y-%m-%d")
+    delivery_date = DateField("Delivery Date", validators=[
+                              DataRequired()], format="%Y-%m-%d")
+    tod = SelectField("AM/PM", choices=[("AM", "AM"), ("PM", "PM")])
     booking_time = TimeField("Booking time", format="%H:%M")
     booking_ref = StringField("Booking Reference")
-    po = IntegerField("PO Number", validators=[DataRequired()], render_kw={"readonly": True})
+    po = IntegerField("PO Number", validators=[
+                      DataRequired()], render_kw={"readonly": True})
     comments = StringField("Comments")
     confirm_booking = SubmitField("Confirm Booking")
 
-        
+
 class UserToVendor(FlaskForm):
     user_email = StringField("Email", validators=[DataRequired(), Email()])
     vendor_name = StringField("Vendor", validators=[DataRequired()])
     submit_allocation = SubmitField("Allocate User to Vendor")
-    
+
 
 class ForgotPassword(FlaskForm):
     email = StringField("Email", validators=[DataRequired(), Email()])
     submit = SubmitField("Send Email")
-    
+
 
 class DeleteBooking(FlaskForm):
     mis_ref = StringField("MIS Reference", validators=[DataRequired()])

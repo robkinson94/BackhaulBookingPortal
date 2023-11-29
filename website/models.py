@@ -16,15 +16,15 @@ class User(UserMixin, Base):
     first_name: Mapped[str] = mapped_column(String, nullable=False)
     last_name: Mapped[str] = mapped_column(String, nullable=False)
     phone: Mapped[int] = mapped_column(String, nullable=False)
-    created_at: Mapped[str] = mapped_column(DateTime(timezone=True), default=func.now())
-    vendor_id: Mapped[int] = mapped_column(Integer, ForeignKey('vendor.id'), nullable=True)
+    created_at: Mapped[str] = mapped_column(
+        DateTime(timezone=True), default=func.now())
+    vendor_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey('vendor.id'), nullable=True)
     vendor = relationship('Vendor', backref=backref('users'))
-    
-    
+
     def __repr__(self):
         return f"User('{self.email}')"
-    
-    
+
 
 class Bookings(Base):
     __tablename__ = 'bookings'
@@ -44,10 +44,10 @@ class Bookings(Base):
     charge: Mapped[float] = mapped_column(Integer, nullable=False)
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
     user = relationship('User', backref=backref('bookings'))
-    
+
     def __repr__(self):
         return f"Bookings('{self.vendor}')"
-    
+
 
 class Vendor(Base):
     __tablename__ = 'vendor'
@@ -64,9 +64,8 @@ class Vendor(Base):
     charge_to_swindon: Mapped[float] = mapped_column(Float, nullable=False)
     charge_to_cambuslang: Mapped[float] = mapped_column(Float, nullable=False)
     charge_to_redhouse: Mapped[float] = mapped_column(Float, nullable=False)
-    assigned_users = relationship('User', back_populates='vendor', overlaps="users")
-    
-    
+    assigned_users = relationship(
+        'User', back_populates='vendor', overlaps="users")
+
     def __repr__(self):
         return f"Vendor('{self.name}')"
-    
