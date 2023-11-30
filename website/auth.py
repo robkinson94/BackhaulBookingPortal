@@ -7,7 +7,7 @@ from .forms import RegistrationForm, LoginForm, ChangePassword
 from .forms import BookingForm, VendorForm, UpgradeToAdmin, DownGradeFromAdmin
 from .forms import UserToVendor, VendorEditBooking, EditVendorDetailsForm
 from .forms import ConfirmBooking, DeleteBooking
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy import func
 
 
@@ -626,12 +626,13 @@ def vendor():
         # Retrieve bookings for the current user's vendor
         result = Bookings.query.filter_by(
             vendor=current_user.vendor.name).all()
-        
-    # Get todays bookings for current vendor
-    todays_bookings = Bookings.query.filter_by(Bookings.vendor == current_user.vendor.name and Bookings.collection_date == datetime.today().date())
 
     # Get the ID of the current user
     bookings = current_user.id
+
+    # Get todays bookings for current user
+    todays_bookings = Bookings.query.filter(Bookings.vendor == current_user.vendor.name).filter(Bookings.collection_date == datetime.today().date()).all()
+    tomorrows_bookings = Bookings.query.filter(Bookings.vendor == current_user.vendor.name).filter(Bookings.collection_date == datetime.today().date() + timedelta(days=1)).all()
 
     # Render the 'vendor.html' template with the necessary data
     return render_template('vendor.html',
@@ -643,5 +644,6 @@ def vendor():
                            result=result,
                            bookings=bookings,
                            delete_booking=delete_booking,
-                           todays_bookings=todays_bookings)
+                           todays_bookings=todays_bookings,
+                           tomorrows_bookings=tomorrows_bookings)
 
