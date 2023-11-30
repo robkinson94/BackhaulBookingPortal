@@ -626,6 +626,9 @@ def vendor():
         # Retrieve bookings for the current user's vendor
         result = Bookings.query.filter_by(
             vendor=current_user.vendor.name).all()
+        
+    # Get todays bookings for current vendor
+    todays_bookings = Bookings.query.filter_by(Bookings.vendor == current_user.vendor.name and Bookings.collection_date == datetime.today().date())
 
     # Get the ID of the current user
     bookings = current_user.id
@@ -639,5 +642,6 @@ def vendor():
                            change_password=change_password,
                            result=result,
                            bookings=bookings,
-                           delete_booking=delete_booking)
+                           delete_booking=delete_booking,
+                           todays_bookings=todays_bookings)
 
