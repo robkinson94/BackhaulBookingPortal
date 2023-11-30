@@ -2,11 +2,11 @@
     block content %}
     
     <form method="POST">
-        {{ form.hidden_tag() }} {% if form.errors %}
+        {{ reset_password.hidden_tag() }} {% if reset_password.errors %}
         <ul class="errors">
-            {% for field_name, field_errors in form.errors|dictsort if field_errors
+            {% for field_name, field_errors in reset_password.errors|dictsort if field_errors
             %} {% for error in field_errors %}
-            <li>{{ form[field_name].label }}: {{ error }}</li>
+            <li>{{ reset_password[field_name].label }}: {{ error }}</li>
             {% endfor %} {% endfor %}
         </ul>
         {% endif %}
@@ -22,9 +22,9 @@
                 </div>
                 <div class="form-outline">
                     {{ reset_password.password_repeat(class="form-control", style="background-color:
-                    #F0F0F0")}} {{ reset_password.repeat.label }}
+                    #F0F0F0")}} {{ reset_password.password_repeat.label }}
                 </div>
-                {{ reset_password.submit_password_reset(class="btn
+                {{ reset_password.submit_password_change(class="btn
                 btn-primary",style="background-color:#ff3a00; color:#ffffff;")}}
                 <div class="d-flex justify-content-between mt-4">
                     <a class="" href="/login">Login</a>

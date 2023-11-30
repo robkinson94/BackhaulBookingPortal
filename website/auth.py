@@ -456,12 +456,13 @@ def reset_password(token):
         # Update the user's password in the database
         new_password = reset_password.password.data
         email = User.query.filter_by(email=email).first()
-        email.password = new_password
+        email.password = generate_password_hash(new_password,method='pbkdf2:sha1',
+                    salt_length=8)
         db.session.commit()
         flash('Password has been reset successfully.')
         return redirect(url_for('auth.login'))
 
-    return redirect(url_for('auth.reset_pass', email=email, request_reset=request_reset))
+    return render_template('reset_pass.html', email=email, request_reset=request_reset, reset_password=reset_password)
 
 
 ######################################################################################################################################################################################
