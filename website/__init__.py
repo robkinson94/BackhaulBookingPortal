@@ -4,6 +4,7 @@ from flask_login import LoginManager
 from sqlalchemy.ext.declarative import declarative_base
 from werkzeug.security import generate_password_hash
 from os import path
+from flask_mail import Mail, Message
 
 # Define a base class for SQLAlchemy models using declarative_base
 Base = declarative_base()
@@ -14,6 +15,9 @@ db = SQLAlchemy(model_class=Base)
 # Define the name of the SQLite database file
 DATABASE = "GXOBackhaulDB.db"
 
+# Define flask mail
+mail = Mail()
+
 
 # Function to create the Flask application
 def create_app():
@@ -23,9 +27,19 @@ def create_app():
     app.config['SECRET_KEY'] = 'HJ7Hgr5thm5saWASE547vfds'
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DATABASE}'
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+    app.config['MAIL_PORT'] = 587
+    app.config['MAIL_USE_TLS'] = True
+    app.config['MAIL_USE_SSL'] = False
+    app.config['MAIL_USERNAME'] = 'robertkinson94@gmail.com'
+    app.config['MAIL_PASSWORD'] = 'wgwi agcb rcyf kzvv'
+    app.config['MAIL_DEFAULT_SENDER'] = 'robertkinson94@gmail.com'
 
     # Initialize and attach SQLAlchemy to the app
     db.init_app(app)
+
+    # Initialize and attach flask_mail to the app
+    mail.init_app(app)
 
     # Import and register blueprints for different parts of the app
     from .views import views

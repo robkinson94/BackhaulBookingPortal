@@ -1,20 +1,25 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from .models import User, Bookings, Vendor
 from werkzeug.security import generate_password_hash, check_password_hash
-from . import db
+from . import db, mail
 from flask_login import login_user, login_required, logout_user, current_user
 from .forms import RegistrationForm, LoginForm, ChangePassword
 from .forms import BookingForm, VendorForm, UpgradeToAdmin, DownGradeFromAdmin
 from .forms import UserToVendor, VendorEditBooking, EditVendorDetailsForm
-from .forms import ConfirmBooking, DeleteBooking
+from .forms import ConfirmBooking, DeleteBooking, RequestReset, ResetPassword
 from datetime import datetime, timedelta
 from sqlalchemy import func
+from itsdangerous import URLSafeTimedSerializer
+from flask_mail import Mail, Message
 
 
 auth = Blueprint('auth', __name__)
 
 
 ADMIN_USERS = [1]
+
+
+s = URLSafeTimedSerializer('h7ghyG66G78d33s3')
 
 
 ######################################################################################################################################################################################
@@ -24,6 +29,7 @@ ADMIN_USERS = [1]
 def login():
     # Create an instance of the LoginForm
     form = LoginForm()
+    request_reset = RequestReset()
 
     # Extract email and password from the form data
     email = form.email.data
@@ -52,7 +58,7 @@ def login():
             flash("Invalid email or password", category="error")
 
     # Render the login template with the form
-    return render_template("login.html", form=form)
+    return render_template("login.html", form=form, request_reset=request_reset)
 
 
 ######################################################################################################################################################################################
@@ -418,6 +424,58 @@ def profile():
                            delete_booking_form=delete_booking_form)
 
 
+######################################################################################################################################################################################
+
+
+@auth.route('/login/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    request_reset = RequestReset()
+    if request_reset.validate_on_submit():
+        email = request_reset.email.data
+        token = s.dumps(email, salt='recover-key')
+        reset_link = url_for('auth.reset_password', token=token, _external=True)
+        send_password_reset_email(email, reset_link)
+        flash('Password reset link has been sent to your email, this may take sevral minutes')
+    return redirect(url_for('auth.login', request_reset=request_reset))
+
+
+######################################################################################################################################################################################
+
+
+@auth.route('/login/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    request_reset = RequestReset()
+    reset_password = ResetPassword()
+    try:
+        email = s.loads(token, salt='recover-key', max_age=3600)  # Link valid for 1 hour
+    except:
+        flash('The reset link is invalid or has expired.', 'error')
+        return redirect(url_for('auth.forgot_password'))
+
+    if reset_password.password.data:
+        # Update the user's password in the database
+        new_password = reset_password.password.data
+        email = User.query.filter_by(email=email).first()
+        email.password = new_password
+        db.session.commit()
+        flash('Password has been reset successfully.')
+        return redirect(url_for('auth.login'))
+
+    return redirect(url_for('auth.reset_pass', email=email, request_reset=request_reset))
+
+
+######################################################################################################################################################################################
+
+
+def send_password_reset_email(email, reset_link):
+    subject = 'Password Reset Request'
+    body = f'Click the following link to reset your password: {reset_link}'
+    message = Message(subject, recipients=[email], body=body)
+    mail.send(message)
+
+
+######################################################################################################################################################################################
+#                                                                                 VENDOR ROUTES                                                                                      #
 ######################################################################################################################################################################################
 
 

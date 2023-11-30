@@ -77,6 +77,11 @@
                                               {{ edit_vendor_form.phone(class="form-control", style="background-color: #F0F0F0", value=current_user.phone)}}
                                               {{ edit_vendor_form.phone.label }}
                                           </div>
+                                          <div class="md-form mb-5">
+                                            <i class="fas fa-home prefix grey-text"></i>
+                                            {{ edit_vendor_form.address(class="form-control", style="background-color: #F0F0F0", value=current_user.vendor.address)}}
+                                            {{ edit_vendor_form.address.label }}
+                                        </div>
                                           <div class="modal-footer d-flex justify-content-center">
                                               {{ edit_vendor_form.submit_vendor_details(class="form-control", style="background-color: #FF3A00; color: #ffffff")}}
                                           </div>

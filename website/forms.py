@@ -39,6 +39,7 @@ class EditVendorDetailsForm(FlaskForm):
     email = StringField("Email Address", validators=[
                         DataRequired(), Email(), Length(min=5, max=25)])
     phone = TelField("Contact Nummber", validators=[Length(min=11, max=15)])
+    address = StringField("Address", validators=[DataRequired()])
     submit_vendor_details = SubmitField("Submit Vendor Changes")
 
 
@@ -52,7 +53,7 @@ class ChangePassword(FlaskForm):
 
 
 class VendorEditBooking(FlaskForm):
-    mis_ref = StringField("MIS Reference", validators=[DataRequired()])
+    mis_ref = StringField("MIS Reference", render_kw={'readonly': True}, validators=[DataRequired()])
     destination = StringField("Destination", validators=[DataRequired()])
     pallets = IntegerField("Pallet Count", validators=[DataRequired()])
     po = IntegerField("PO Number", validators=[DataRequired()])
@@ -162,3 +163,16 @@ class ForgotPassword(FlaskForm):
 class DeleteBooking(FlaskForm):
     mis_ref = StringField("MIS Reference", validators=[DataRequired()])
     delete_booking = SubmitField("Delete Booking")
+
+
+class RequestReset(FlaskForm):
+    email = StringField("Email", validators=[DataRequired(), Email()])
+    submit = SubmitField("Request Password Reset Email")
+
+class ResetPassword(FlaskForm):
+    password = PasswordField("Password", validators=[DataRequired(),
+                                                     validators.regexp(r'^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$',
+                                                     message="Password must contain at least one digit, one lowercase letter, one uppercase letter, and be at least 8 characters long.")])
+    password_repeat = PasswordField("Password Repeat", validators=[
+                                    DataRequired(), EqualTo('password')])
+    submit_password_change = SubmitField("Submit Password")
