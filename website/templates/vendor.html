@@ -58,27 +58,22 @@
                                       </div>
                                       <div class="modal-body mx-3">
                                           <div class="md-form mb-5">
-                                              <i class="fas fa-user prefix grey-text"></i>
                                               {{ edit_vendor_form.first_name(class="form-control", style="background-color: #F0F0F0", value=current_user.first_name)}}
                                               {{ edit_vendor_form.first_name.label }}
                                           </div>
                                           <div class="md-form mb-5">
-                                              <i class="fas fa-user prefix grey-text"></i>
                                               {{ edit_vendor_form.last_name(class="form-control", style="background-color: #F0F0F0", value=current_user.last_name)}}
                                               {{ edit_vendor_form.last_name.label }}
                                           </div>
                                           <div class="md-form mb-5">
-                                              <i class="fas fa-envelope prefix grey-text"></i>
                                               {{ edit_vendor_form.email(class="form-control", style="background-color: #F0F0F0", value=current_user.email)}}
                                               {{ edit_vendor_form.email.label }}
                                           </div>
                                           <div class="md-form mb-5">
-                                              <i class="fas fa-phone prefix grey-text"></i>
                                               {{ edit_vendor_form.phone(class="form-control", style="background-color: #F0F0F0", value=current_user.phone)}}
                                               {{ edit_vendor_form.phone.label }}
                                           </div>
                                           <div class="md-form mb-5">
-                                            <i class="fas fa-home prefix grey-text"></i>
                                             {{ edit_vendor_form.address(class="form-control", style="background-color: #F0F0F0", value=current_user.vendor.address)}}
                                             {{ edit_vendor_form.address.label }}
                                         </div>
@@ -103,7 +98,6 @@
                                       </div>
                                       <div class="modal-body mx-3">
                                           <div class="md-form mb-5">
-                                              <i class="fas fa-user prefix grey-text"></i>
                                               {{ delete_booking.mis_ref(class="form-control", style="background-color: #F0F0F0")}}
                                               {{ delete_booking.mis_ref.label }}
                                           </div>
@@ -128,22 +122,18 @@
                                       </div>
                                       <div class="modal-body mx-3">
                                           <div class="md-form mb-5">
-                                              <i class="fas fa-user prefix grey-text"></i>
                                               {{ booking_form.destination(class="form-control", style="background-color: #F0F0F0")}}
                                               {{ booking_form.destination.label }}
                                           </div>
                                           <div class="md-form mb-5">
-                                              <i class="fas fa-envelope prefix grey-text"></i>
                                               {{ booking_form.pallets(class="form-control", style="background-color: #F0F0F0")}}
                                               {{ booking_form.pallets.label }}
                                           </div>
                                           <div class="md-form mb-5">
-                                              <i class="fas fa-envelope prefix grey-text"></i>
                                               {{ booking_form.po(class="form-control", style="background-color: #F0F0F0")}}
                                               {{ booking_form.po.label }}
                                           </div>
                                           <div class="md-form mb-5">
-                                              <i class="fas fa-envelope prefix grey-text"></i>
                                               {{ booking_form.comments(class="form-control", style="background-color: #F0F0F0")}}
                                               {{ booking_form.comments.label }}
                                           </div>
@@ -214,27 +204,22 @@
                                                                   <div class="md-form mb-5">
                                                                       {{ vendor_edit_booking_form.hidden_tag() }}
                                                                       <div class="md-form mb-5">
-                                                                          <i class="fas fa-user prefix grey-text"></i>
                                                                           {{ vendor_edit_booking_form.mis_ref(class="form-control", style="background-color: #F0F0F0", value=r.mis_reference)}}
                                                                           {{ vendor_edit_booking_form.mis_ref.label }}
                                                                       </div>
                                                                       <div class="md-form mb-5">
-                                                                          <i class="fas fa-user prefix grey-text"></i>
                                                                           {{ vendor_edit_booking_form.destination(class="form-control", style="background-color: #F0F0F0", value=r.destination)}}
                                                                           {{ vendor_edit_booking_form.destination.label }}
                                                                       </div>
                                                                       <div class="md-form mb-5">
-                                                                          <i class="fas fa-envelope prefix grey-text"></i>
                                                                           {{ vendor_edit_booking_form.pallets(class="form-control", style="background-color: #F0F0F0", value=r.pallets)}}
                                                                           {{ vendor_edit_booking_form.pallets.label }}
                                                                       </div>
                                                                       <div class="md-form mb-5">
-                                                                          <i class="fas fa-envelope prefix grey-text"></i>
                                                                           {{ vendor_edit_booking_form.po(class="form-control", style="background-color: #F0F0F0", value=r.po)}}
                                                                           {{ vendor_edit_booking_form.po.label }}
                                                                       </div>
                                                                       <div class="md-form mb-5">
-                                                                          <i class="fas fa-envelope prefix grey-text"></i>
                                                                           {{ vendor_edit_booking_form.comments(class="form-control", style="background-color: #F0F0F0", value=r.comments)}}
                                                                           {{ vendor_edit_booking_form.comments.label }}
                                                                       </div>
@@ -265,12 +250,10 @@
                                       {{ change_password.hidden_tag() }}
                                       <div class="modal-body mx-3">
                                           <div class="md-form mb-5">
-                                              <i class="fas fa-user prefix grey-text"></i>
                                               {{ change_password.password(class="form-control", style="background-color: #F0F0F0")}}
                                               {{ change_password.password.label }}
                                           </div>
                                           <div class="md-form mb-5">
-                                              <i class="fas fa-user prefix grey-text"></i>
                                               {{ change_password.password_repeat(class="form-control", style="background-color: #F0F0F0")}}
                                               {{ change_password.password_repeat.label }}
                                           </div>

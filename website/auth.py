@@ -452,7 +452,7 @@ def reset_password(token):
         flash('The reset link is invalid or has expired.', 'error')
         return redirect(url_for('auth.forgot_password'))
 
-    if reset_password.password.data:
+    if reset_password.validate_on_submit():
         # Update the user's password in the database
         new_password = reset_password.password.data
         email = User.query.filter_by(email=email).first()
@@ -705,4 +705,12 @@ def vendor():
                            delete_booking=delete_booking,
                            todays_bookings=todays_bookings,
                            tomorrows_bookings=tomorrows_bookings)
+
+
+@auth.errorhandler(404)
+def page_not_found(error):
+    return render_template('404.html'), 404
+
+
+
 

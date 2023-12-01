@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from sqlalchemy.ext.declarative import declarative_base
@@ -86,6 +86,11 @@ def create_app():
     def load_user(id):
         user = User.query.get(int(id))
         return user
+    
+    @app.errorhandler(404)
+    def page_not_found(error):
+        return render_template('404.html'), 404
+    
 
     return app
 
@@ -95,3 +100,5 @@ def create_database(app):
     if not path.exists('website/' + DATABASE):
         db.create_all(app=app)
         print('Created Database!')
+
+

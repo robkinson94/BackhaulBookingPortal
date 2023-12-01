@@ -49,7 +49,7 @@
                                     </div>
                                     {{ form.submit(class="btn btn-primary",style="background-color:#ff3a00; color:#ffffff;")}}
                                     <div class="text-center pt-1 mb-5 pb-1">
-                                        <a class="text-muted" data-toggle="modal" data-target="#modalContactFormOne">Forgot password?</a>
+                                        <a class="text-muted" data-toggle="modal" data-target="#modalContactFormOne">Forgot password? Click here</a>
                                     </div>
                                     <a href="/sign-up">
                                         <div class="d-flex align-items-center justify-content-center pb-4">
@@ -82,8 +82,7 @@
                 <form method="POST" action="/login/forgot_password">
                     {{ request_reset.hidden_tag() }}
                     <div class="modal-body mx-3">
-                        <div class="md-form mb-5">
-                            <i class="fas fa-user prefix grey-text"></i>
+                        <div class="md-form mb-5 justify-content-center">
                             {{ request_reset.email(class="form-control", style="background-color: #F0F0F0")}}
                             {{ request_reset.email.label }}
                         </div>
