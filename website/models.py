@@ -18,6 +18,7 @@ class User(UserMixin, Base):
     phone: Mapped[int] = mapped_column(String, nullable=False)
     created_at: Mapped[str] = mapped_column(
         DateTime(timezone=True), default=func.now())
+    profile_picture: Mapped[str] = mapped_column(String, nullable=True)
     vendor_id: Mapped[int] = mapped_column(
         Integer, ForeignKey('vendor.id'), nullable=True)
     vendor = relationship('Vendor', backref=backref('users'))

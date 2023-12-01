@@ -3,7 +3,7 @@
   <div class="container">
       <!-- Navbar brand -->
       <a class="navbar-brand me-2" href="/">
-          <img src="{{ url_for('static', filename='images/GXO_Logo.png')}}" height="16" alt="MDB Logo" loading="lazy" style="margin-top: -1px;" />
+          <img src="{{ url_for('static', filename='images/GXO_Logo.png')}}" height="16" alt="GXO Logo" loading="lazy" style="margin-top: -1px;" />
       </a>
       <!-- Left links -->
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
@@ -41,7 +41,12 @@
           <div class="col-lg-4">
               <div class="card mb-4">
                   <div class="card-body text-center">
-                      <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3.webp" alt="avatar" class="rounded-circle img-fluid" style="width: 150px;">
+                        {% if current_user.profile_picture %}
+                        <img src="{{ url_for('static', filename='profile_pictures/' + current_user.profile_picture) }}" alt="avatar" class="rounded-circle img-fluid" style="width: 200px; height: 200px; object-fit: cover;">
+                        {% else %}
+                        <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3.webp" alt="avatar" class="rounded-circle img-fluid" style="width: 150px;">
+                        {% endif %}
+                      
                       <h5 class="my-3">{{ current_user.first_name }} {{ current_user.last_name }}</h5>
                       <h3>{{ current_user.vendor.name}}</h3>
                       <p class="text-muted mb-1"></p>
@@ -53,7 +58,7 @@
                                           <button type="button" class="btn btn-primary" style="background-color: #ff3a00;" data-dismiss="modal" aria-label="Close">
                                               <span aria-hidden="true">&times;</span>
                                           </button>
-                                          <form method="POST" action='/vendor/edit_profile'>
+                                          <form method="POST" action='/vendor/edit_profile' enctype="multipart/form-data">
                                               {{ edit_vendor_form.hidden_tag() }}
                                       </div>
                                       <div class="modal-body mx-3">
@@ -76,6 +81,10 @@
                                           <div class="md-form mb-5">
                                             {{ edit_vendor_form.address(class="form-control", style="background-color: #F0F0F0", value=current_user.vendor.address)}}
                                             {{ edit_vendor_form.address.label }}
+                                        </div>
+                                        <div class="md-form mb-5">
+                                            {{ edit_vendor_form.profile_picture(class="form-control", style="background-color: #F0F0F0", value=current_user.profile_picture)}}
+                                            {{ edit_vendor_form.profile_picture.label }}
                                         </div>
                                           <div class="modal-footer d-flex justify-content-center">
                                               {{ edit_vendor_form.submit_vendor_details(class="form-control", style="background-color: #FF3A00; color: #ffffff")}}
@@ -339,10 +348,10 @@
                                         <th scope="col" style="background-color: #2E3033; color: #ffffff;">Destination</th>
                                     </tr>
                                 </thead>
-                                <tbody> {% for t_bookings in todays_bookings %} <tr class="text-center" style="font-weight: bold;">
+                                <tbody> {% if todays_bookings %}{% for t_bookings in todays_bookings %} <tr class="text-center" style="font-weight: bold;">
                                         <td>{{ t_bookings.vendor }}</td>
                                         <td>{{ t_bookings.destination }}</td>
-                                    </tr> {% endfor %} </tbody>
+                                    </tr> {% endfor %}{% endif %} </tbody>
                             </table>
                           </div>
                       </div>
@@ -358,10 +367,10 @@
                                         <th scope="col" style="background-color: #2E3033; color: #ffffff;">Destination</th>
                                     </tr>
                                 </thead>
-                                <tbody> {% for t_bookings in tomorrows_bookings %} <tr class="text-center" style="font-weight: bold;">
+                                <tbody> {% if tomorrows_bookings %}{% for t_bookings in tomorrows_bookings %} <tr class="text-center" style="font-weight: bold;">
                                         <td>{{ t_bookings.vendor }}</td>
                                         <td>{{ t_bookings.destination }}</td>
-                                    </tr> {% endfor %} </tbody>
+                                    </tr> {% endfor %}{% endif %}</tbody>
                             </table>
                           </div>
                       </div>

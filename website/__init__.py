@@ -1,10 +1,11 @@
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from werkzeug.security import generate_password_hash
 from os import path
 from flask_mail import Mail, Message
+from flask_migrate import Migrate
 
 # Define a base class for SQLAlchemy models using declarative_base
 Base = declarative_base()
@@ -17,6 +18,9 @@ DATABASE = "GXOBackhaulDB.db"
 
 # Define flask mail
 mail = Mail()
+
+
+migrate = Migrate()
 
 
 # Function to create the Flask application
@@ -40,6 +44,9 @@ def create_app():
 
     # Initialize and attach flask_mail to the app
     mail.init_app(app)
+
+
+    migrate.init_app(app, db)
 
     # Import and register blueprints for different parts of the app
     from .views import views
@@ -71,6 +78,7 @@ def create_app():
             db.session.commit()
         else:
             pass
+    
 
     # Create all database tables and create admin user during app context
     with app.app_context():
@@ -90,6 +98,14 @@ def create_app():
     @app.errorhandler(404)
     def page_not_found(error):
         return render_template('404.html'), 404
+
+    @app.errorhandler(405)
+    def page_not_found(error):
+        return render_template('405.html'), 405
+    
+    @app.errorhandler(500)
+    def page_not_found(error):
+        return render_template('500.html'), 500
     
 
     return app
@@ -100,5 +116,8 @@ def create_database(app):
     if not path.exists('website/' + DATABASE):
         db.create_all(app=app)
         print('Created Database!')
+
+
+
 
 

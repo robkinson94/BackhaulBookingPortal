@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import func
 from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Mail, Message
+import os
 
 
 auth = Blueprint('auth', __name__)
@@ -532,6 +533,8 @@ def edit_profile():
         last_name = edit_vendor_form.last_name.data
         email = edit_vendor_form.email.data
         phone = edit_vendor_form.phone.data
+        address = edit_vendor_form.address.data
+        profile_picture = edit_vendor_form.profile_picture.data
 
         # Query the user by ID
         user = User.query.filter_by(id=current_user.id).first()
@@ -542,7 +545,12 @@ def edit_profile():
             user.last_name = last_name
             user.email = email
             user.phone = phone
+            user.address = address
+            user.profile_picture = profile_picture.filename
+            profile_picture.save(os.path.join('website/static/profile_pictures', profile_picture.filename))
             db.session.commit()
+            
+            
 
             # Flash success message
             flash("Changes saved successfully", category='success')
@@ -689,9 +697,13 @@ def vendor():
     # Get the ID of the current user
     bookings = current_user.id
 
-    # Get todays bookings for current user
-    todays_bookings = Bookings.query.filter(Bookings.vendor == current_user.vendor.name).filter(Bookings.collection_date == datetime.today().date()).all()
-    tomorrows_bookings = Bookings.query.filter(Bookings.vendor == current_user.vendor.name).filter(Bookings.collection_date == datetime.today().date() + timedelta(days=1)).all()
+    if current_user.vendor is None:
+        todays_bookings = None
+        tomorrows_bookings = None
+    else:
+        # Get todays bookings for current user
+        todays_bookings = Bookings.query.filter(Bookings.vendor == current_user.vendor.name).filter(Bookings.collection_date == datetime.today().date()).all()
+        tomorrows_bookings = Bookings.query.filter(Bookings.vendor == current_user.vendor.name).filter(Bookings.collection_date == datetime.today().date() + timedelta(days=1)).all()
 
     # Render the 'vendor.html' template with the necessary data
     return render_template('vendor.html',
@@ -705,11 +717,6 @@ def vendor():
                            delete_booking=delete_booking,
                            todays_bookings=todays_bookings,
                            tomorrows_bookings=tomorrows_bookings)
-
-
-@auth.errorhandler(404)
-def page_not_found(error):
-    return render_template('404.html'), 404
 
 
 

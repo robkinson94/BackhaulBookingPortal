@@ -5,8 +5,8 @@ from wtforms import (Form, BooleanField,
 
 from wtforms import (IntegerField, DateField, 
                      TimeField, SelectField, 
-                     FloatField, TelField, DateTimeField)
-
+                     FloatField, TelField)
+from flask_wtf.file import FileField, FileAllowed
 from flask_wtf import FlaskForm
 from wtforms.validators import DataRequired, Length, Email, EqualTo
 from .models import Vendor
@@ -40,6 +40,9 @@ class EditVendorDetailsForm(FlaskForm):
                         DataRequired(), Email(), Length(min=5, max=25)])
     phone = TelField("Contact Nummber", validators=[Length(min=11, max=15)])
     address = StringField("Address", validators=[DataRequired()])
+    profile_picture = FileField('Profile Picture', validators=[
+        FileAllowed(['jpg', 'png', 'jpeg'], 'Images only! Allowed formats: jpg, png, jpeg.')
+    ])
     submit_vendor_details = SubmitField("Submit Vendor Changes")
 
 
