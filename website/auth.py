@@ -471,8 +471,8 @@ def reset_password(token):
 
 def send_password_reset_email(email, reset_link):
     subject = 'Password Reset Request'
-    body = f'Click the following link to reset your password: {reset_link}'
-    message = Message(subject, recipients=[email], body=body)
+    html_body = render_template('reset_password_email.html', reset_link=reset_link)
+    message = Message(subject, recipients=[email], html=html_body)
     mail.send(message)
 
 

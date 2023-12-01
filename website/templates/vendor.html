@@ -82,13 +82,13 @@
                                           <div class="md-form mb-5">
                                             {{ edit_vendor_form.address(class="form-control", style="background-color: #F0F0F0", value=current_user.vendor.address)}}
                                             {{ edit_vendor_form.address.label }}
-                                        </div>
-                                        {% else %}
-                                        {% endif %}
-                                        <div class="md-form mb-5">
+                                          </div>
+                                            {% else %}
+                                            {% endif %}
+                                          <div class="md-form mb-5">
                                             {{ edit_vendor_form.profile_picture(class="form-control", style="background-color: #F0F0F0", value=current_user.profile_picture)}}
                                             {{ edit_vendor_form.profile_picture.label }}
-                                        </div>
+                                          </div>
                                           <div class="modal-footer d-flex justify-content-center">
                                               {{ edit_vendor_form.submit_vendor_details(class="form-control", style="background-color: #FF3A00; color: #ffffff")}}
                                           </div>
