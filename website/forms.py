@@ -39,7 +39,7 @@ class EditVendorDetailsForm(FlaskForm):
     email = StringField("Email Address", validators=[
                         DataRequired(), Email(), Length(min=5, max=25)])
     phone = TelField("Contact Nummber", validators=[Length(min=11, max=15)])
-    address = StringField("Address", validators=[DataRequired()])
+    address = StringField("Address")
     profile_picture = FileField('Profile Picture', validators=[
         FileAllowed(['jpg', 'png', 'jpeg'], 'Images only! Allowed formats: jpg, png, jpeg.')
     ])

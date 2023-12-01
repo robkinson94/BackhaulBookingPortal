@@ -78,10 +78,13 @@
                                               {{ edit_vendor_form.phone(class="form-control", style="background-color: #F0F0F0", value=current_user.phone)}}
                                               {{ edit_vendor_form.phone.label }}
                                           </div>
+                                          {% if current_user.vendor.address %}
                                           <div class="md-form mb-5">
                                             {{ edit_vendor_form.address(class="form-control", style="background-color: #F0F0F0", value=current_user.vendor.address)}}
                                             {{ edit_vendor_form.address.label }}
                                         </div>
+                                        {% else %}
+                                        {% endif %}
                                         <div class="md-form mb-5">
                                             {{ edit_vendor_form.profile_picture(class="form-control", style="background-color: #F0F0F0", value=current_user.profile_picture)}}
                                             {{ edit_vendor_form.profile_picture.label }}
