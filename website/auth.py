@@ -545,7 +545,7 @@ def edit_profile():
             user.last_name = last_name
             user.email = email
             user.phone = phone
-            user.address = address
+            user.vendor.address = address
             user.profile_picture = profile_picture.filename
             profile_picture.save(os.path.join('website/static/profile_pictures', profile_picture.filename))
             db.session.commit()
