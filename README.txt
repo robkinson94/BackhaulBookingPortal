@@ -2,9 +2,6 @@
 
 - First of all thank you for taking your time to look at my web application.
 
-- admin user = admin@admin.com AdminPassword123!
-- Standard users all password = UserPassword123!
-
 - This is a Backhaul Booking Portal, is a web application designed to streamline and optimize the
 - process of scheduling and managing backhaul slots for transportation and logistics purposes. 
 - This portal facilitates the coordination between vendors and transporters, allowing them to 
@@ -42,6 +39,9 @@
 - Installation
 
 - Visit: https://backhaul-portal.onrender.com/
+
+- admin user = admin@admin.com AdminPassword123!
+- Standard users all password = UserPassword123!
 
 - High level overview
 
