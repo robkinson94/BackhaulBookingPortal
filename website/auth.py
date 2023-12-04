@@ -469,6 +469,7 @@ def reset_password(token):
 ######################################################################################################################################################################################
 
 
+# Send the email with users email and reset link
 def send_password_reset_email(email, reset_link):
     subject = 'Password Reset Request'
     html_body = render_template('reset_password_email.html', reset_link=reset_link)
@@ -717,6 +718,32 @@ def vendor():
                            delete_booking=delete_booking,
                            todays_bookings=todays_bookings,
                            tomorrows_bookings=tomorrows_bookings)
+    
+    
+@auth.route('/vendor/cancel-booking', methods=['GET', 'POST'])
+@login_required
+def request_delete_booking():
+    STATUS = "Requested Cancellation"
+    # Create an instance of the DeleteBooking form
+    delete_booking_form = DeleteBooking()
+
+    if delete_booking_form.validate_on_submit():
+        # Get MIS reference from the form
+        mis_ref = delete_booking_form.mis_ref.data
+        # Query the booking with the provided MIS reference and check if the booking belongs to the user
+        booking = Bookings.query.filter(Bookings.mis_reference==mis_ref).filter(Bookings.vendor==current_user.vendor.name).first()
+
+        if booking:
+            # Delete the booking from the database
+            booking.status = STATUS
+            db.session.commit()
+            flash("Booking cancellation has been requsted", category='success')
+        else:
+            flash("MIS Reference not found or is not yours, please try again.", category='error')
+    else:
+        flash(delete_booking_form.errors)
+
+    return redirect(url_for('auth.vendor'))
 
 
 

@@ -368,7 +368,10 @@
                                           <tbody> {% for booking in bookings %} <tr>
                                                   <td>
                                                       <div class="d-flex align-items-center">
-                                                          <img src="https://mdbootstrap.com/img/new/avatars/8.jpg" alt="" style="width: 45px; height: 45px" class="rounded-circle" />
+                                                        {% if booking.user.profile_picture == None %}
+                                                        {% else %}
+                                                          <img src="{{ url_for('static', filename='profile_pictures/' + booking.user.profile_picture) }}" alt="" style="width: 45px; height: 45px" class="rounded-circle" />
+                                                        {% endif %}
                                                           <div class="ms-3">
                                                               <p class="text-muted mb-0">{{ booking.user.email }} </p>
                                                           </div>
@@ -463,9 +466,6 @@
                                   </div>
                               </div>
                           </div>
-                      </div>
-                      <div class="text-center">
-                          <a href="" class="btn btn-default btn-rounded mb-4" style="background-color: #FF3A00; color: #ffffff;">Download Import</a>
                       </div>
                       <div class="text-center">
                           <a href="" class="btn btn-default btn-rounded mb-4" style="background-color: #FF3A00; color: #ffffff;" data-toggle="modal" data-target="#modalContactFormThree">Manage Bookings</a>

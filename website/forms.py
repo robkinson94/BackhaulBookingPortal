@@ -20,7 +20,7 @@ class RegistrationForm(FlaskForm):
     last_name = StringField("Last name", validators=[
                             DataRequired(), Length(min=3, max=15)])
     email = StringField("Email Address", validators=[
-                        DataRequired(), Email(), Length(min=5, max=25)])
+                        DataRequired(), Email(), Length(min=5, max=30)])
     phone = TelField("Contact Nummber", validators=[Length(min=11, max=15)])
     super_user = BooleanField("Super User")
     password = PasswordField("Password", validators=[DataRequired(),
